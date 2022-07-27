@@ -8,3 +8,11 @@ class Cart(models.Model):
     item_name = models.CharField(max_length=30)
     quantity = models.IntegerField()
     unit_price = models.IntegerField()
+
+
+class Order(models.Model):
+    img_path = models.CharField()
+    item_name = models.CharField(max_length=12)
+    quantity = models.IntegerField()
+    total = models.IntegerField()
+    status = models.CharField()
