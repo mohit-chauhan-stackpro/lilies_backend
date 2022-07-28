@@ -28,7 +28,7 @@ def post_register(request):
         password = received_json_data.get('password')
         print(username, email, password)
         User.objects.create_user(username, email, password)
-        return StreamingHttpResponse('it was post request: '+str(received_json_data))
+        return HttpResponse('User Register Successfully!!')
     return HttpResponse('Wrong Request')
 
 
@@ -41,9 +41,9 @@ def check_if_register(request):
         user = authenticate(username=username, password=password)
         print(user)
         if user is None:
-            return StreamingHttpResponse('Not Allowed to login'+str(received_json_data))
+            return HttpResponse('Not Allowed to login!')
         else:
-            return StreamingHttpResponse('Allowed to login'+str(received_json_data))
+            return HttpResponse('Allowed to login!')
     return HttpResponse('Wrong Request')
 
 
