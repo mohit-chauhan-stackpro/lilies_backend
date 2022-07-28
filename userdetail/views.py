@@ -14,6 +14,7 @@ from userdetail.models import Cart, ItemDetail, Order
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+import jwt
 
 
 # Create your views here.
@@ -36,14 +37,23 @@ def post_register(request):
 def check_if_register(request):
     if request.method == 'POST':
         received_json_data = json.loads(request.body)
+        # payload_data = received_json_data
+        my_secret = 'my_super_secret'
         username = received_json_data.get('username')
         password = received_json_data.get('password')
+        id = User.objects.get(username=username).pk
         user = authenticate(username=username, password=password)
         print(user)
         if user is None:
             return HttpResponse('Not Allowed to login!')
         else:
-            return HttpResponse('Allowed to login!')
+            token = jwt.encode(payload={
+                "id": id,
+                "username": username,
+                "password": password
+            }, key=my_secret)
+            print(token)
+            return HttpResponse(json.dumps(token))
     return HttpResponse('Wrong Request')
 
 
@@ -71,7 +81,13 @@ def get_item_details(request):
 
 def get_cart(request):
     if request.method == 'GET':
-        cart_items = Cart.objects.all()
+        token = request.headers.get('Authorization')
+        print(token)
+
+        payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
+        print(payload)
+        id = payload.get('id')
+        cart_items = Cart.objects.filter(user=id)
         cart_items_list = serializers.serialize('json', cart_items)
         return HttpResponse(cart_items_list, content_type="text/json-comment-filtered")
     elif request.method == 'POST':
@@ -79,6 +95,20 @@ def get_cart(request):
 
 
 def get_order(request):
-    order_details = Order.objects.all()
-    order_details_list = serializers.serialize('json', order_details)
-    return HttpResponse(order_details_list, content_type="text/json-comment-filtered")
+    if request.method == 'GET':
+        token = request.headers.get('Authorization')
+        print(token)
+        payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
+        print(payload)
+        id = payload.get('id')
+        order_details = Order.objects.filter(user=id)
+        order_details_list = serializers.serialize('json', order_details)
+        return HttpResponse(order_details_list, content_type="text/json-comment-filtered")
+    elif request.method == 'POST':
+        return HttpResponse('Null')
+
+
+def get_item_detail(request, pk):
+    item_detail = ItemDetail.objects.filter(pk=pk)
+    item_detail_list = serializers.serialize('json', item_detail)
+    return HttpResponse(item_detail_list, content_type="text/json-comment-filtered")
