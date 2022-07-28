@@ -36,7 +36,9 @@ def post_register(request):
 def check_if_register(request):
     if request.method == 'POST':
         received_json_data = json.loads(request.body)
-        username = received_json_data.get('username')
+        # username = received_json_data.get('username')
+        email = received_json_data.get('email')
+        username = User.objects.get(email=email.lower()).username
         password = received_json_data.get('password')
         user = authenticate(username=username, password=password)
         print(user)
@@ -69,6 +71,7 @@ def get_item_details(request):
         return StreamingHttpResponse('it was post request: '+str(received_json_data))
 
 
+@csrf_exempt
 def get_cart(request):
     if request.method == 'GET':
         cart_items = Cart.objects.all()
@@ -78,6 +81,7 @@ def get_cart(request):
         return HttpResponse('Null')
 
 
+@csrf_exempt
 def get_order(request):
     order_details = Order.objects.all()
     order_details_list = serializers.serialize('json', order_details)
