@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 from userdetail.models import Cart, ItemDetail, Order
 
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+
 
 # Create your views here.
 
@@ -21,18 +23,27 @@ from django.contrib.auth.models import User
 def post_register(request):
     if request.method == 'POST':
         received_json_data = json.loads(request.body)
-        name = received_json_data.get('name')
+        username = received_json_data.get('username')
         email = received_json_data.get('email')
         password = received_json_data.get('password')
-        print(name, email, password)
-        User.objects.create_user(name, email, password)
+        print(username, email, password)
+        User.objects.create_user(username, email, password)
         return StreamingHttpResponse('it was post request: '+str(received_json_data))
     return HttpResponse('Wrong Request')
 
 
 @csrf_exempt
 def check_if_register(request):
-
+    if request.method == 'POST':
+        received_json_data = json.loads(request.body)
+        username = received_json_data.get('username')
+        password = received_json_data.get('password')
+        user = authenticate(username=username, password=password)
+        print(user)
+        if user is None:
+            return StreamingHttpResponse('Not Allowed to login'+str(received_json_data))
+        else:
+            return StreamingHttpResponse('Allowed to login'+str(received_json_data))
     return HttpResponse('Wrong Request')
 
 
