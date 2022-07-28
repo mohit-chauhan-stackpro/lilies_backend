@@ -1,4 +1,5 @@
 from contextlib import nullcontext
+from email.policy import HTTP
 import json
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
@@ -11,9 +12,29 @@ from django.views.decorators.csrf import csrf_exempt
 
 from userdetail.models import Cart, ItemDetail, Order
 
+from django.contrib.auth.models import User
+
 # Create your views here.
-# item = ItemDetail(request.POST, received_json_data)
-# item.save()
+
+
+@csrf_exempt
+def post_register(request):
+    if request.method == 'POST':
+        received_json_data = json.loads(request.body)
+        name = received_json_data.get('name')
+        email = received_json_data.get('email')
+        password = received_json_data.get('password')
+        print(name, email, password)
+        User.objects.create_user(name, email, password)
+        return StreamingHttpResponse('it was post request: '+str(received_json_data))
+    return HttpResponse('Wrong Request')
+
+
+@csrf_exempt
+def check_if_register(request):
+
+    return HttpResponse('Wrong Request')
+
 
 @csrf_exempt
 def get_item_details(request):
@@ -35,13 +56,15 @@ def get_item_details(request):
             img_path=img_path, item_name=item_name, item_description=item_description, pices_available=pices_available, unit_price=unit_price, time_to_cook=time_to_cook)
         item_obj.save()
         return StreamingHttpResponse('it was post request: '+str(received_json_data))
-       
 
 
 def get_cart(request):
-    cart_items = Cart.objects.all()
-    cart_items_list = serializers.serialize('json', cart_items)
-    return HttpResponse(cart_items_list, content_type="text/json-comment-filtered")
+    if request.method == 'GET':
+        cart_items = Cart.objects.all()
+        cart_items_list = serializers.serialize('json', cart_items)
+        return HttpResponse(cart_items_list, content_type="text/json-comment-filtered")
+    elif request.method == 'POST':
+        return HttpResponse('Null')
 
 
 def get_order(request):
