@@ -11,7 +11,7 @@ from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 
 
-from userdetail.models import Cart, ItemDetail, Order
+from userdetail.models import Cart, CartItem, ItemDetail, Order, OrderItem
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -88,11 +88,36 @@ def get_cart(request):
         payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
         print(payload)
         id = payload.get('id')
-        cart_items = Cart.objects.filter(user=id)
-        cart_items_list = serializers.serialize('json', cart_items)
-        return HttpResponse(cart_items_list, content_type="text/json-comment-filtered")
-    elif request.method == 'POST':
-        return HttpResponse('Null')
+        cart = Cart.objects.filter(user__id=id).last()
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        response_data = {
+            "cart_id": cart.id,
+            "items": []
+        }
+
+        for cart_item in cart_items:
+            response_data["items"].append(
+                {"id": cart_item.food_item.id, "food_item": cart_item.food_item.item_name, "qunatity": cart_item.quantity})
+
+        return JsonResponse(response_data)
+        # cart_items = Cart.objects.filter(user=id)
+        # cart_items_list = serializers.serialize('json', cart_items)
+        # return HttpResponse(cart_items_list, content_type="text/json-comment-filtered")
+
+
+@csrf_exempt
+def add_to_cart(request):
+    received_json_data = json.loads(request.body)
+    token = request.headers.get('Authorization')
+    print(token)
+    payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
+    print(payload)
+    id = payload.get('id')
+    cart_items = received_json_data.get('food_items')
+    print(cart_items)
+
+    return HttpResponse('added to cart Successfully')
 
 
 def get_order(request):
@@ -102,11 +127,20 @@ def get_order(request):
         payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
         print(payload)
         id = payload.get('id')
-        order_details = Order.objects.filter(user=id)
-        order_details_list = serializers.serialize('json', order_details)
-        return HttpResponse(order_details_list, content_type="text/json-comment-filtered")
-    elif request.method == 'POST':
-        return HttpResponse('Null')
+        order = Order.objects.filter(user__id=id).last()
+        order_items = OrderItem.objects.filter(order=order)
+        response_data = {
+            "order_id": order.id,
+            "items": []
+        }
+        for order_item in order_items:
+            response_data["items"].append(
+                {"id": order_item.food_item.id, "food_item": order_item.food_item.item_name, "qunatity": order_item.quantity})
+        return JsonResponse(response_data)
+
+        # order_details = Order.objects.filter(user=id)
+        # order_details_list = serializers.serialize('json', order_details)
+        # return HttpResponse(order_details_list, content_type="text/json-comment-filtered")
 
 
 @csrf_exempt

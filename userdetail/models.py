@@ -17,8 +17,6 @@ class ItemDetail(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    food_item = models.ManyToManyField(ItemDetail)
-    quantity = models.IntegerField()
 
 
 class CartItem(models.Model):

@@ -10,5 +10,6 @@ urlpatterns = [
     path('register/', views.register_user, name="register"),
     path('login/', views.check_if_register, name="login"),
     path('itemdetail/<int:pk>', views.get_item_detail, name="itemdetail"),
-    path('addorder', views.add_order, name="addorder")
+    path('addorder/', views.add_order, name="addorder"),
+    path('addtocart/', views.add_to_cart, name="addtocart"),
 ]
