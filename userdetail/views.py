@@ -1,6 +1,7 @@
 from contextlib import nullcontext
 from email.policy import HTTP
 import json
+from re import I
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
 
@@ -21,7 +22,7 @@ import jwt
 
 
 @csrf_exempt
-def post_register(request):
+def register_user(request):
     if request.method == 'POST':
         received_json_data = json.loads(request.body)
         username = received_json_data.get('username')
@@ -107,6 +108,22 @@ def get_order(request):
     elif request.method == 'POST':
         return HttpResponse('Null')
 
+
+@csrf_exempt
+def add_order(request):
+    received_json_data = json.loads(request.body)
+    token = request.headers.get('Authorization')
+    print(token)
+    payload = jwt.decode(token, "my_super_secret", algorithms=["HS256"])
+    print(payload)
+    id = payload.get('id')
+    order_items = received_json_data.get('food_items')
+    print(order_items)
+
+    return HttpResponse('order added Successfully')
+
+
+# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJzb251IiwicGFzc3dvcmQiOiJzb251QDEyMyJ9.56VwdeYLUioR-8CNeE7ZXkM4MoftF2RrGo4ffAUAHTk
 
 def get_item_detail(request, pk):
     item_detail = ItemDetail.objects.filter(pk=pk)

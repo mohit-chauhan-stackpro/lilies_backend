@@ -1,3 +1,5 @@
+from email.policy import default
+from operator import mod
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -19,9 +21,19 @@ class Cart(models.Model):
     quantity = models.IntegerField()
 
 
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    food_item = models.ForeignKey(ItemDetail, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    img_path = models.ImageField()
-    quantity = models.IntegerField()
     total = models.IntegerField()
-    status = models.CharField(max_length=30)
+    status = models.CharField(max_length=30, default="cooking")
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    food_item = models.ForeignKey(ItemDetail, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
